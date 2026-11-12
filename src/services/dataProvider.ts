@@ -67,7 +67,7 @@ function meetingFromRow(row: MeetingRow, agenda: AgendaRow[], summary?: SummaryR
     duration: row.duration_minutes, type: typeToUi[row.meeting_type],
     priority: priorityToUi[row.priority], status: meetingStatusToUi[row.status],
     participants: row.participant_count, expectedParticipants: row.expected_participants,
-    summary: summary?.body ?? row.description ?? "", published: Boolean(row.published_at),
+    summary: summary?.body ?? (row.status === "scheduled" ? row.description ?? "" : ""), published: Boolean(row.published_at),
     agenda: agenda.filter((item) => item.meeting_id === row.id).sort((a,b) => a.position-b.position).map((item) => ({
       title: item.title, result: item.result ?? "",
       status: item.status === "considered" ? "Рассмотрено" : item.status === "pending" ? "Предстоит" : "Перенесено",
