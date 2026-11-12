@@ -1,0 +1,14 @@
+node_modules
+dist
+.npm-cache
+.deno-cache
+tsconfig.tsbuildinfo
+artifacts/
+.local-pg/
+.pg-socket/
+supabase/.temp/
+Референсы/
+.env
+.env.*
+!.env.example
+*.local
