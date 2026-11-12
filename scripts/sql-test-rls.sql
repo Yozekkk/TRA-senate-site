@@ -2,9 +2,11 @@
 insert into auth.users(id, email) values
   ('00000000-0000-0000-0000-000000000001', 'chair@example.invalid'),
   ('00000000-0000-0000-0000-000000000002', 'secretary@example.invalid'),
-  ('00000000-0000-0000-0000-000000000003', 'viewer@example.invalid');
+  ('00000000-0000-0000-0000-000000000003', 'viewer@example.invalid'),
+  ('00000000-0000-0000-0000-000000000004', 'senator@example.invalid');
 update public.profiles set role = 'chairman' where id = '00000000-0000-0000-0000-000000000001';
 update public.profiles set role = 'secretary' where id = '00000000-0000-0000-0000-000000000002';
+update public.profiles set role = 'senator' where id = '00000000-0000-0000-0000-000000000004';
 
 insert into public.meetings(id, meeting_no, title, starts_at, meeting_type, published_at) values
   ('10000000-0000-0000-0000-000000000001', 'TEST-PUBLIC', 'Публичное тестовое заседание', now(), 'plenary', now()),
@@ -37,6 +39,23 @@ do $$ begin
 end $$;
 reset role;
 
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000004';
+set role authenticated;
+do $$ begin
+  if (select count(*) from public.meetings) <> 2 then raise exception 'Senator cannot read drafts'; end if;
+  begin
+    insert into public.meetings(meeting_no, title, starts_at, meeting_type)
+    values ('SENATOR-WRITE', 'Недопустимая запись', now(), 'plenary');
+    raise exception 'Senator write unexpectedly succeeded';
+  exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+set role authenticated;
+insert into public.site_settings(key, value, is_public) values ('portal_title', '"ARGENTI"'::jsonb, true);
+reset role;
+
 set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
 set role authenticated;
 do $$ begin
@@ -50,6 +69,8 @@ end $$;
 insert into public.meetings(meeting_no, title, starts_at, meeting_type)
 values ('SECRETARY-CREATED', 'Черновик секретаря', now(), 'plenary');
 select public.save_meeting('{"id":"10000000-0000-0000-0000-000000000003","number":"RPC-TEST","title":"Заседание через атомарную функцию","description":"Открытое обсуждение","starts_at":"2026-11-12T17:00:00+03:00","duration":90,"type":"committee","priority":"normal","status":"scheduled","participants":null,"expected_participants":null,"published":false,"summary":"","agenda":[{"title":"Первый вопрос повестки","result":"","status":"pending"}]}'::jsonb);
+insert into public.meeting_summaries(meeting_id, body) values ('10000000-0000-0000-0000-000000000003', 'Временный текст для проверки удаления краткого итога.');
+select public.save_meeting('{"id":"10000000-0000-0000-0000-000000000003","number":"RPC-TEST","title":"Заседание через атомарную функцию","description":"Открытое обсуждение","starts_at":"2026-11-12T17:00:00+03:00","duration":90,"type":"committee","priority":"normal","status":"scheduled","participants":null,"expected_participants":null,"published":false,"summary":"","agenda":[{"title":"Первый вопрос повестки","result":"","status":"pending"}]}'::jsonb);
 update public.decisions set status = 'in_progress' where decision_no = 'TEST-PUBLIC';
 reset role;
 
@@ -62,4 +83,8 @@ do $$ begin
     then raise exception 'Secretary write missing'; end if;
   if (select count(*) from public.meeting_agenda where meeting_id = '10000000-0000-0000-0000-000000000003') <> 1
     then raise exception 'Atomic meeting agenda missing'; end if;
+  if exists (select 1 from public.meeting_summaries where meeting_id = '10000000-0000-0000-0000-000000000003')
+    then raise exception 'Removed summary remained visible'; end if;
+  if (select count(*) from public.site_settings where key = 'portal_title') <> 1
+    then raise exception 'Chairman settings write missing'; end if;
 end $$;
