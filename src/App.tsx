@@ -1923,7 +1923,40 @@ function LoginPage() {
     finally { setBusy(false); }
   };
   if (session) return <div className="login-page"><PublicHeader /><main className="login-content"><Card className="login-card"><h1>Вы уже вошли</h1><Link className="button button-primary" to="/dashboard">Открыть панель</Link></Card></main></div>;
-  return <div className="login-page"><PublicHeader /><main className="login-content"><Card className="login-card"><SenateMark size={46}/><span className="eyebrow accent">ДОСТУП ДЛЯ УЧАСТНИКОВ</span><h1>Вход в Сенат</h1><p>Войдите с учётной записью, выданной администрацией. Публичные материалы доступны без входа.</p><form onSubmit={submit}><label>Электронная почта<input required type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)}/></label><label>Пароль<input required type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)}/></label>{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={busy}>{busy ? "Входим…" : "Войти"}</Button></form><Link className="text-link" to="/">Вернуться на главную</Link></Card></main></div>;
+  return <div className="login-page"><PublicHeader /><main className="login-content"><Card className="login-card"><SenateMark size={46}/><span className="eyebrow accent">ДОСТУП ДЛЯ УЧАСТНИКОВ</span><h1>Вход в Сенат</h1><p>Войдите с учётной записью, выданной администрацией. Публичные материалы доступны без входа.</p><form onSubmit={submit}><label>Электронная почта<input required type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)}/></label><label>Пароль<input required type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)}/></label>{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={busy}>{busy ? "Входим…" : "Войти"}</Button></form><Link className="text-link" to="/forgot-password">Восстановить доступ</Link><Link className="text-link" to="/">Вернуться на главную</Link></Card></main></div>;
+}
+
+function ForgotPasswordPage() {
+  const { requestPasswordReset } = useAuth();
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const submit = async (event: FormEvent) => {
+    event.preventDefault(); setBusy(true); setError("");
+    try { await requestPasswordReset(email.trim()); setSent(true); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось отправить письмо."); }
+    finally { setBusy(false); }
+  };
+  return <div className="login-page"><PublicHeader /><main className="login-content"><Card className="login-card"><SenateMark size={46}/><span className="eyebrow accent">ВОССТАНОВЛЕНИЕ ДОСТУПА</span><h1>Новый пароль</h1><p>Укажите адрес учётной записи Сената. Если он зарегистрирован, мы отправим ссылку для смены пароля.</p>{sent ? <p className="auth-success" role="status">Проверьте почту. Если учётная запись существует, письмо со ссылкой уже отправлено.</p> : <form onSubmit={submit}><label>Электронная почта<input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)}/></label>{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={busy}>{busy ? "Отправляем…" : "Отправить ссылку"}</Button></form>}<Link className="text-link" to="/login">Вернуться ко входу</Link></Card></main></div>;
+}
+
+function ResetPasswordPage() {
+  const { loading, session, updatePassword } = useAuth();
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (password !== confirmation) { setError("Пароли не совпадают."); return; }
+    setBusy(true); setError("");
+    try { await updatePassword(password); setSaved(true); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось изменить пароль."); }
+    finally { setBusy(false); }
+  };
+  return <div className="login-page"><PublicHeader /><main className="login-content"><Card className="login-card"><SenateMark size={46}/><span className="eyebrow accent">УЧЁТНАЯ ЗАПИСЬ СЕНАТА</span><h1>Смена пароля</h1>{loading ? <p role="status">Проверяем ссылку…</p> : saved ? <p className="auth-success" role="status">Пароль обновлён. Теперь можно открыть панель Сената.</p> : session ? <form onSubmit={submit}><label>Новый пароль<input required type="password" minLength={12} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)}/></label><label>Повторите пароль<input required type="password" minLength={12} autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)}/></label>{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={busy}>{busy ? "Сохраняем…" : "Сохранить пароль"}</Button></form> : <p>Ссылка недействительна или срок её действия истёк. Запросите новое письмо.</p>}<Link className="text-link" to={saved ? "/dashboard" : "/forgot-password"}>{saved ? "Открыть панель" : "Получить новую ссылку"}</Link></Card></main></div>;
 }
 
 function AdminPage() {
@@ -1942,6 +1975,8 @@ export default function App() {
     <Routes location={location}>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route
         path="/dashboard"

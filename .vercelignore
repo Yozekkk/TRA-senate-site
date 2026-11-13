@@ -1,0 +1,14 @@
+.git/
+.vercel/
+.agents/
+.codex/
+.env*
+artifacts/
+docs/
+scripts/
+supabase/
+Референсы/
+.local-pg/
+.pg-socket/
+node_modules/
+dist/

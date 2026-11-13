@@ -13,7 +13,7 @@ VITE_DATA_MODE=mock npm run dev
 
 Откройте `http://localhost:5173`. `shell.nix` закрепляет Node.js 26, Git, Chromium и PostgreSQL 17, не меняя глобальную конфигурацию NixOS. Без Nix нужен совместимый Node.js и локальные Chromium/PostgreSQL для браузерных и SQL-проверок.
 
-Для режима Supabase заполните `.env.local` по `.env.example` значениями **только целевого проекта Tra** и запустите `npm run dev`. Без переменных production-сборка работает с пустыми состояниями, не подставляет mock-данные.
+Для режима Supabase заполните `.env.local` по `.env.example` значениями **только нового проекта ARGENTI-Senate** и запустите `npm run dev`. Без переменных production-сборка работает с пустыми состояниями, не подставляет mock-данные.
 
 ## Проверки
 
@@ -30,6 +30,10 @@ npm run audit:visual -- artifacts/visual-tests/mock
 
 ## Страницы
 
-`/`, `/dashboard`, `/schedule`, `/archive`, `/meetings/:id`, `/analytics`, `/decisions`, `/about`, `/login`, `/admin`. Маршрутизация на Vercel настроена в `vercel.json`. Редактирование заседаний и решений доступно только председателю/секретарю; в mock-режиме формы работают локально. Процедура назначения председателя, схема и ограничения — в [DATA-ARCHITECTURE.md](docs/DATA-ARCHITECTURE.md).
+`/`, `/dashboard`, `/schedule`, `/archive`, `/meetings/:id`, `/analytics`, `/decisions`, `/about`, `/login`, `/forgot-password`, `/reset-password`, `/admin`. Маршрутизация на Vercel настроена в `vercel.json`. Редактирование заседаний и решений доступно только председателю/секретарю; в mock-режиме формы работают локально. Процедура назначения председателя, схема и ограничения — в [DATA-ARCHITECTURE.md](docs/DATA-ARCHITECTURE.md). Для ссылок восстановления пароля нужно добавить `/reset-password` в Redirect URLs целевого Supabase-проекта.
 
-В текущем окружении организация Supabase Tra недоступна подключению Codex. Удалённая база и реальные данные пока не созданы; миграция проверена на локальном PostgreSQL. Это ограничение не влияет на сборку и просмотр пустого портала.
+Отдельный проект Supabase пока не создан: аккаунт владельца достиг лимита двух активных бесплатных проектов во всех организациях. После уточнения пользователя целевая организация — `nelli-english`; существующие проекты не затрагиваются. Миграция проверена на локальном PostgreSQL. Сравнение с существующей базой NCEA — в [NCEA-ARCHITECTURE-REVIEW.md](docs/NCEA-ARCHITECTURE-REVIEW.md).
+
+## Публикация
+
+Проект Vercel `yozekkk1/tra-senate-site` доступен по адресу https://tra-senate-site.vercel.app. Пока новый Supabase-проект не создан, публичная версия показывает честные пустые состояния и сообщение о недоступности реестра. Источник GitHub подключается после выдачи Vercel GitHub App доступа к репозиторию `Yozekkk/TRA-senate-site`; до этого публикация выполняется через Vercel CLI из проверенного локального дерева.

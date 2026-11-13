@@ -10,6 +10,8 @@ type AuthState = {
   canEdit: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
 };
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -46,6 +48,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async signOut() {
       if (!supabase) return;
       const { error } = await supabase.auth.signOut();
+      if (error) throw new Error(error.message);
+    },
+    async requestPasswordReset(email) {
+      if (!supabase) throw new Error("Подключение к Supabase ещё не настроено.");
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: new URL("/reset-password", window.location.origin).toString(),
+      });
+      if (error) throw new Error(error.message);
+    },
+    async updatePassword(password) {
+      if (!supabase) throw new Error("Подключение к Supabase ещё не настроено.");
+      const { error } = await supabase.auth.updateUser({ password });
       if (error) throw new Error(error.message);
     },
   }), [session, role, loading]);

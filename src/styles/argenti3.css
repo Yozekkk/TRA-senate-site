@@ -117,6 +117,7 @@ body { background: var(--bg); }
 .login-card input:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
 .login-card form .button { margin-top: 4px; }
 .form-error { color: #ffc1c1 !important; font-size: 12px; line-height: 1.5; }
+.auth-success { width: 100%; padding: 14px 16px; border: 1px solid #547b45; border-radius: 11px; background: #20321f; color: #d5f4c4 !important; }
 .publish-toggle { display: flex !important; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid #445444; border-radius: 10px; background: #1b281c; }
 .publish-toggle input { accent-color: var(--lime); width: 18px; height: 18px; flex: none; }
 .admin-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
