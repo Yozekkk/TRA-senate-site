@@ -36,4 +36,4 @@ npm run audit:visual -- artifacts/visual-tests/mock
 
 ## Публикация
 
-Проект Vercel `yozekkk1/tra-senate-site` доступен по адресу https://tra-senate-site.vercel.app. Пока новый Supabase-проект не создан, публичная версия показывает честные пустые состояния и сообщение о недоступности реестра. Источник GitHub подключается после выдачи Vercel GitHub App доступа к репозиторию `Yozekkk/TRA-senate-site`; до этого публикация выполняется через Vercel CLI из проверенного локального дерева.
+Проект Vercel `yozekkk1/tra-senate-site` доступен по адресу https://tra-senate-site.vercel.app и подключён к GitHub-репозиторию `Yozekkk/TRA-senate-site` для сборок из `main`. Пока новый Supabase-проект не создан, публичная версия показывает честные пустые состояния и сообщение о недоступности реестра. Переменные Supabase в Vercel можно задать только после создания отдельного проекта.
